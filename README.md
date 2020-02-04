@@ -9,8 +9,8 @@ Getting Started
      $ git clone https://github.com/kazutomo/clwrap
      $ cd clwrap
 
-
-* Intel GPU/CPU
+Intel GPU/CPU
+-------------
 
      $ make
      $ ./testclwrap
@@ -24,7 +24,8 @@ Getting Started
      0,1,0 1,1,1 2,1,0 3,1,1 4,1,0 5,1,1 6,1,0 7,1,1 
 
 
-* Emulator (Intel FPGA SDK for OpenCL)
+Emulator (Intel FPGA SDK for OpenCL)
+------------------------------------
 
      $ source /soft/fpga/altera/pro/16.0.2.222/aoc-env.sh
      $ make
@@ -37,7 +38,8 @@ Getting Started
      inout = 7
      (0,0) (1,1) (2,0) (3,1) (4,0) (5,1) (6,0) (7,1) 
 
-* FPGA (using JLSE ruth node)
+FPGA (using JLSE ruth node)
+---------------------------
 
      $ cp /soft/fpga/altera/clwrap/dummy.aocx .  # use pre-compiled binary
      $ qsub -q fpga_385a -n 1 -t 30 -I
