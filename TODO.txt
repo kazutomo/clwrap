@@ -1,0 +1,10 @@
+
+- add multiple-kernel support, which requires to change the semantic a bit
+
+- add CLW_DEVID to specify the device ID
+
+- add CLW_BUILDLOG to dump the build log
+
+- add CLW_DUMPKERNEL to dump the binary
+
+- write a tutorial about disassembling and assembling the kernel
