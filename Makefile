@@ -33,12 +33,12 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: testclwrap
+all: demohost
 
-testclwrap : testclwrap.cpp clwrap.hpp
+demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
-dummy.aocx : dummy.cl
+demokernel.aocx : demokernel.cl
 	aoc -march=emulator -DEMULATOR $<
 
 install: clwrap.hpp
@@ -46,8 +46,8 @@ install: clwrap.hpp
 	install -t $(INSTALL_PATH)/include clwrap.hpp
 
 clean:
-	rm -f testclwrap *.o
+	rm -f demohost *.o
 
 distclean: clean
 	rm -f *~
-	rm -rf dummy dummy.aocx dummy.aoco
+	rm -rf *.aocx *.aoco

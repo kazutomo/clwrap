@@ -1,7 +1,8 @@
-// just a dummy OpenCL kernel for testing
+// A demo OpenCL kernel for testing
+// fills global and local index to the global memory array
 // Kaz Yoshii <ky@anl.gov>
 
-__kernel void dummy(__global int *restrict g1,
+__kernel void demokernel(__global int *restrict g1,
 		    __global int *restrict g2)
 {
 	int g_idx = get_global_id(0);

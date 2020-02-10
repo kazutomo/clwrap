@@ -24,7 +24,9 @@ static void test_clwrap()
 	int *a0 = new int[gsiz];
 	int *a1 = new int[gsiz];
 
-	bool ret = cw.prepKernel("dummy"); // find dummy.cl and use 'dummy' as the kernel name
+	// find demokernel.cl and use 'demokernel' as the kernel name
+	bool ret = cw.prepKernel("demokernel");
+
 	if (!ret) {
 		cout << "prepKernel() failed!" << endl;
 		return;
