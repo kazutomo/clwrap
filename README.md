@@ -13,7 +13,7 @@ Intel GPU/CPU
 -------------
 
      $ make
-     $ ./testclwrap
+     $ ./demohost
      [Platforms]
      0: Portable Computing Language
      1: Intel Gen OCL Driver [selected]
@@ -30,7 +30,7 @@ Emulator (Intel FPGA SDK for OpenCL)
      $ source /soft/fpga/altera/pro/16.0.2.222/aoc-env.sh
      $ make
      $ ./run-alteraemu.sh
-     Kernel: dummy-emulator.aocx
+     Kernel: demokernel-emulator.aocx
      Platform0: Altera SDK for OpenCL
      Device0: EmulatorDevice : Emulated Device
      ....
@@ -44,8 +44,8 @@ FPGA (using JLSE ruth node)
      $ cp /soft/fpga/altera/clwrap/dummy.aocx .  # use pre-compiled binary
      $ qsub -q fpga_385a -n 1 -t 30 -I
      $ source /soft/fpga/altera/pro/16.0.2.222/aoc-env.sh
-     ruth $ ./testclwrap
-     Kernel: dummy.aocx
+     ruth $ ./demohost
+     Kernel: demokernel.aocx
      Platform0: Altera SDK for OpenCL
      Device0: p385a_sch_ax115 : nalla_pcie (aclnalla_pcie0)
      Reprogramming device with handle 1

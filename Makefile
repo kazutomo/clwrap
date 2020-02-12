@@ -33,9 +33,12 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: demohost
+all: demohost daxpyhost
 
 demohost : demohost.cpp clwrap.hpp
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+
+daxpyhost : daxpyhost.cpp clwrap.hpp
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 demokernel.aocx : demokernel.cl
