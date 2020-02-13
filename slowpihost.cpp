@@ -30,7 +30,7 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 	cw.runKernel(gsiz, lsiz);
 
 	cout << "Elapsed [Sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
-	cout << "Loops/sec   : " << (double)n / cw.getKernelElapsedNanoSec() * 1e-9 << endl;
+	cout << "Loops/sec   : " << (double)n / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
 
 	for (int i = 0; i < 4 /*gsiz*/; i++) {
 		cout << res[i] << endl;
