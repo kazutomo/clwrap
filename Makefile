@@ -52,7 +52,7 @@ install: clwrap.hpp
 	install -t $(INSTALL_PATH)/include clwrap.hpp
 
 clean:
-	rm -f demohost *.o
+	rm -f demohost daxpyhost slowpihost *.o
 
 distclean: clean
 	rm -f *~
