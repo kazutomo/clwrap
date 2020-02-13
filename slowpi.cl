@@ -12,7 +12,7 @@ ulong xorshift128plus(ulong2* s)
 }
 
 __kernel void slowpi(
-	 const ulong2 seed,
+	 ulong2 seed,
 	 const ulong n,
 	 __global float *restrict res)
 {
