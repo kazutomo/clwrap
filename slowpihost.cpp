@@ -40,7 +40,7 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 int main(int argc, char *argv[])
 {
 	cl_ulong n = 100000;
-	int gsiz = 256;
+	int gsiz = 1024;
 	int lsiz = 8;
 
 	if (argc > 1) {
