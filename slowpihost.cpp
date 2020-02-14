@@ -20,8 +20,8 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 	}
 
 	cl_long2 seed;
-	seed.x = 123;
-	seed.y = 234;
+	seed.s[0] = 123;
+	seed.s[1] = 234;
 	
 	cw.appendArg(sizeof(cl_ulong2),  &seed, cw.VALUE);
 	cw.appendArg(sizeof(cl_ulong),   &n,    cw.VALUE);

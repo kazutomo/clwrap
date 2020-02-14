@@ -33,7 +33,7 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: demohost daxpyhost slowpihost
+all: demohost daxpyhost # slowpihost
 
 demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
