@@ -56,6 +56,11 @@ FPGA (using JLSE ruth node)
 
 NOTE:
 
+- By default, it finds the platform name contains "Intel". The
+  platform search keyword can be changed using the CLW_PF environment
+  variable.  For example,
+  $ CLW_PF=Altera ./yourclwraphostcode
+
 - Only tested it with OpenCL in Quartus 16.0.2.222 and Nallatech 385A BSP for 16.0.2.222
 
 - Please reserve a node using qsub when you need to compile your
