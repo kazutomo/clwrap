@@ -1,10 +1,10 @@
-
 #PLATFORM = intelfpga
 PLATFORM = intelgpu
+#PLATFORM = nvidia
 
 ifeq ($(PLATFORM),intelfpga)
 CXX=g++
-CFLAGS = -Wall -O2 -g -Wno-unknown-pragmas
+CFLAGS = -Wall -O2 -g -Wno-unknown-pragmas -DINTEL
 CFLAGS += $(shell aocl compile-config)
 CXXFLAGS = $(CFLAGS) -std=c++11
 LDFLAGS = $(shell aocl link-config)
@@ -12,7 +12,13 @@ endif
 
 ifeq ($(PLATFORM),intelgpu)
 CXX=g++
-CXXFLAGS = -Wall -O2 -g -std=gnu++0x
+CXXFLAGS = -Wall -O2 -g -std=gnu++0x -DINTEL
+LDFLAGS = -lOpenCL
+endif
+
+ifeq ($(PLATFORM),nvidia)
+CXX=nvcc
+CXXFLAGS = -O2 -std=c++11 -DNVIDIA
 LDFLAGS = -lOpenCL
 endif
 
@@ -36,13 +42,13 @@ INSTALL_PATH ?= /usr/local
 all: demohost daxpyhost slowpihost
 
 demohost : demohost.cpp clwrap.hpp
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 daxpyhost : daxpyhost.cpp clwrap.hpp
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 slowpihost : slowpihost.cpp clwrap.hpp
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 demokernel.aocx : demokernel.cl
 	aoc -march=emulator -DEMULATOR $<

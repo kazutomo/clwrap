@@ -243,7 +243,12 @@ public:
 		  Intel FPGA: "Intel(R) FPGA SDK for OpenCL(TM)"
 		  pocl: "Portable Computing Language"
 		 */
+    #ifdef INTEL
 		std::string pfkey = "Intel";
+    #endif
+    #ifdef NVIDIA
+		std::string pfkey = "CUDA";
+    #endif
 		if(const char *env = std::getenv("CLW_PF")) {
 			pfkey = env;
 			std::cout << "Platform search: " << pfkey << std::endl;
@@ -251,6 +256,7 @@ public:
 		platform_id = -1;
 		for (int i = 0; i < (int)pfs.size(); i++) {
 			std::string pn = pfs[i].getInfo<CL_PLATFORM_NAME>();
+      std::cout << pn << std::endl;
 			if (pn.find(pfkey.c_str()) != std::string::npos) {
 				platform_id = i;
 				break;
