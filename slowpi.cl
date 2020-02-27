@@ -11,6 +11,27 @@ ulong xorshift128plus(ulong2* s)
         return (*s).y + y;
 }
 
+
+__kernel void randonly(
+	 ulong2 seed,
+	 const ulong n,
+	 __global ulong *restrict res)
+{
+	int g_idx = get_global_id(0);
+	ulong tmp = 0;
+	ulong dist = 10000000;
+	ulong i;
+
+	seed.x += g_idx;
+
+	for (i = 0; i < n; i++) {
+	     tmp = tmp ^ (xorshift128plus(&seed) % dist);
+	}
+
+	res[g_idx] = tmp;
+}
+
+
 __kernel void slowpi(
 	 ulong2 seed,
 	 const ulong n,

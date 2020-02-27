@@ -35,7 +35,7 @@ extern "C" void aocl_mmd_card_info(const char *name , int id,
 class clwrap {
 public:
 	const int version_major = 0;
-	const int version_minor = 5;
+	const int version_minor = 6;
 
 	// VALUE: pass by value, otherwise passed by reference
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
@@ -402,6 +402,13 @@ public:
 		}
 
 		return rc;
+	}
+
+	void clearArgs(void) {
+		// for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it)
+
+		kargs.clear();
+
 	}
 
 	// return the index of the added argument
