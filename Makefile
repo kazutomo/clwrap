@@ -4,6 +4,7 @@ PLATFORM = intelgpu
 
 ifeq ($(PLATFORM),intelfpga)
 CXX=g++
+#CXX=arm-linux-gnueabihf-g++
 CFLAGS = -Wall -O2 -g -Wno-unknown-pragmas -DINTEL
 CFLAGS += $(shell aocl compile-config)
 CXXFLAGS = $(CFLAGS) -std=c++11

@@ -1,0 +1,16 @@
+
+Tested FPGA platform so far:
+
+- Nallatech 386A
+  Intel FPGA OpenCL 16.0.2.222 / Nallatech 385A BSP
+  Intel FPGA OpenCL 17.1.0.240 / Nallatech 385A BSP
+
+- Terasic DE10 Nano
+  Quartus 18.1. Used the arm cross compiler in DS-5 (Intel FPGA SOC EDS)
+  SSD image: de10-nano-image-Angstrom-v2016.12.socfpga-sdimg.2017.03.31.tgz
+
+
+
+
+
+

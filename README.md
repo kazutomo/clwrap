@@ -61,7 +61,6 @@ NOTE:
   variable.  For example,
   $ CLW_PF=Altera ./yourclwraphostcode
 
-- Only tested it with OpenCL in Quartus 16.0.2.222 and Nallatech 385A BSP for 16.0.2.222
 
 - Please reserve a node using qsub when you need to compile your
   kernel targetting actual FPGA board, not emulator. Quartus
