@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 {
 	cl_ulong n = 10000; // niter for PI calculation
 	int gsiz = 100*1000; // # of PI calculated
-	int lsiz = 8; // OpenCL localsize
+	int lsiz = 16; // OpenCL localsize
 
 	if (argc > 1) {
 		n = atoi(argv[1]);
