@@ -67,9 +67,9 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 
 int main(int argc, char *argv[])
 {
-	cl_ulong n = 100000; // niter for PI calculation
-	int gsiz = 1024; // # of PI calculated
-	int lsiz = 16; // OpenCL localsize
+	cl_ulong n = 10000; // niter for PI calculation
+	int gsiz = 100*1000; // # of PI calculated
+	int lsiz = 8; // OpenCL localsize
 
 	if (argc > 1) {
 		n = atoi(argv[1]);
