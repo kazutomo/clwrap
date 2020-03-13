@@ -24,10 +24,11 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 	cw.appendArg(sizeof(cl_ulong2),  &seed, cw.VALUE);
 	cw.appendArg(sizeof(cl_ulong),   &n,    cw.VALUE);
 	cw.appendArg(sizeof(cl_ulong)*gsiz, dummy, cw.DEV2HOST);
+	cw.runKernel(gsiz, lsiz);
 
 	cout << "* Randonly loop" << endl;
 	cout << "Elapsed [Sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
-	cout << "Loops/sec   : " << (double)n / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
+	cout << "Rands/sec   : " << (double)gsiz / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
 
 	cw.clearArgs();
 
@@ -38,7 +39,6 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 		return;
 	}
 
-
 	cw.appendArg(sizeof(cl_ulong2),  &seed, cw.VALUE);
 	cw.appendArg(sizeof(cl_ulong),   &n,    cw.VALUE);
 	cw.appendArg(sizeof(float)*gsiz, res, cw.DEV2HOST);
@@ -47,7 +47,9 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 
 	cout << "* Slow PI loop" << endl;
 	cout << "Elapsed [Sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
-	cout << "Loops/sec   : " << (double)n / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
+	cout << "PIs/sec   : " << (double)gsiz / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
+
+
 
 	for (int i = 0; i < gsiz; i++) {
 		if ( fabs(res[i] - M_PI) > 0.1 ) {
