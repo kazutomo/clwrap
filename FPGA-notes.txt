@@ -1,5 +1,20 @@
+Notes:
 
-Tested FPGA platform so far:
+- To measure the elapsed time runs on an actual FPGA board , call
+  cw.getKernelElapsedNanoSec() after cw.runKernel().
+
+- To read the power consumption on Nallatech 385A board, uncomment the following line in
+  clwrap.hpp, call cw.readboardpower() from host and recompile it
+
+  //#define ENABLE_AOCL_MMD_HACK
+
+   Note: you need to write your version of cw.runKernel() if you want
+   to sample power while your kernel is running.
+
+
+
+
+Tested FPGA platform:
 
 - Nallatech 386A
   Intel FPGA OpenCL 16.0.2.222 / Nallatech 385A BSP

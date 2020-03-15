@@ -62,20 +62,5 @@ NOTE:
   $ CLW_PF=Altera ./yourclwraphostcode
 
 
-- Please reserve a node using qsub when you need to compile your
-  kernel targetting actual FPGA board, not emulator. Quartus
-  compilation is a heavy task; running multiple compilers slow login
-  nodes down.
-
-- To measure the elapsed time runs on an actual FPGA board , call
-  cw.getKernelElapsedNanoSec() after cw.runKernel().
-
-- To read the power consumption, uncomment the following line in
-  clwrap.hpp, call cw.readboardpower() from host and recompile it
-
-  //#define ENABLE_AOCL_MMD_HACK
-
-   Note: you need to write your version of cw.runKernel() if you want
-   to sample power while your kernel is running.
 
 Please feel free to contact me Kaz Yoshii <kazutomo.yoshii@gmail.com> if you have any question.
