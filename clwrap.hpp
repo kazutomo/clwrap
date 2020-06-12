@@ -244,7 +244,7 @@ public:
 		  pocl: "Portable Computing Language"
 		 */
     #ifdef INTEL
-		std::string pfkey = "Intel";
+		std::string pfkey = "HD";
     #endif
     #ifdef NVIDIA
 		std::string pfkey = "CUDA";

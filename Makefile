@@ -1,5 +1,5 @@
-PLATFORM = intelfpga
-#PLATFORM = intelgpu
+#PLATFORM = intelfpga
+PLATFORM = intelgpu
 #PLATFORM = nvidia
 
 ifeq ($(PLATFORM),intelfpga)
@@ -40,7 +40,7 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: demohost daxpyhost slowpihost
+all: demohost daxpyhost saxpyhost slowpihost
 
 demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)

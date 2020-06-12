@@ -12,9 +12,9 @@ static double gettime(void)
 	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
 }
 
-static
 template <class FPType>
-void host_daxpy(int n,
+static
+void host_axpy(int n,
 		FPType a,
 		FPType *__restrict__ x,
 		FPType *__restrict__ y)
@@ -23,9 +23,9 @@ void host_daxpy(int n,
 	for (i=0; i<n; i++) y[i] += a * x[i];
 }
 
-static
 template <class FPType>
-void benchdaxpy(int m, int lsiz)
+static
+void benchaxpy(int m, int lsiz)
 {
 	clwrap  cw;
 
@@ -75,7 +75,7 @@ void benchdaxpy(int m, int lsiz)
 	if (1) {
 		double s, e;
 		s = gettime();
-		host_daxpy <FPType> (n, a, x, y);
+		host_axpy <FPType> (n, a, x, y);
 		e = gettime() - s;
 		cout << "* host axpi\n";
 		cout << "elapsed [nsec]: " << e * 1e9 << endl;
@@ -98,9 +98,9 @@ int main(int argc, char *argv[])
 	printf("Localsize = %d\n", lsiz);
 
 #ifdef ENABLE_DP
-	benchdaxpy <double>(m, lsiz);
+	benchaxpy<double>(m, lsiz);
 #else
-	benchdaxpy <float>(m, lsiz);
+	benchaxpy<float>(m, lsiz);
 #endif
 	return 0;
 }
