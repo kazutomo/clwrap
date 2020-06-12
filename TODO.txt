@@ -1,4 +1,8 @@
 
+- get rid of INTEL, CUDA flag. the platform is selected dynamically
+
+- add mutiple device support
+
 - add multiple-kernel support, which requires to change the semantic a bit
 
 - add CLW_DEVID to specify the device ID
