@@ -12,17 +12,20 @@ static double gettime(void)
 	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
 }
 
-static void host_daxpy(int n,
-		       double a,
-		       double *__restrict__ x,
-		       double *__restrict__ y)
+static
+template <class FPType>
+void host_daxpy(int n,
+		FPType a,
+		FPType *__restrict__ x,
+		FPType *__restrict__ y)
 {
 	int i;
 	for (i=0; i<n; i++) y[i] += a * x[i];
 }
 
-
-static void benchdaxpy(int m, int lsiz)
+static
+template <class FPType>
+void benchdaxpy(int m, int lsiz)
 {
 	clwrap  cw;
 
@@ -32,25 +35,29 @@ static void benchdaxpy(int m, int lsiz)
 	int n = 1024*1024 * m;
 	int gsiz = n;
 
-	double a = 2.0;
-	double *x = new double[n];
-	double *y = new double[n];
+	FPType a = 2.0;
+	FPType *x = new FPType[n];
+	FPType *y = new FPType[n];
 
 	/* init data */
 	for (int i = 0; i < n; i++) {
-		x[i] = (double)i + 1.0;
+		x[i] = (FPType)i + 1.0;
 		y[i] = 0.0;
 	}
 
+#ifdef ENABLE_DP
 	bool ret = cw.prepKernel("daxpy");
+#else
+	bool ret = cw.prepKernel("saxpy");
+#endif
 	if (!ret) {
 		cout << "prepKernel() failed!" << endl;
 		return;
 	}
 
-	cw.appendArg(sizeof(double),  &a, cw.VALUE);
-	cw.appendArg(sizeof(double)*n, x, cw.HOST2DEV);
-	cw.appendArg(sizeof(double)*n, y, cw.DUPLEX);
+	cw.appendArg(sizeof(FPType),  &a, cw.VALUE);
+	cw.appendArg(sizeof(FPType)*n, x, cw.HOST2DEV);
+	cw.appendArg(sizeof(FPType)*n, y, cw.DUPLEX);
 
 	cw.runKernel(gsiz, lsiz);
 
@@ -68,7 +75,7 @@ static void benchdaxpy(int m, int lsiz)
 	if (1) {
 		double s, e;
 		s = gettime();
-		host_daxpy(n, a, x, y);
+		host_daxpy <FPType> (n, a, x, y);
 		e = gettime() - s;
 		cout << "* host axpi\n";
 		cout << "elapsed [nsec]: " << e * 1e9 << endl;
@@ -90,7 +97,10 @@ int main(int argc, char *argv[])
 	printf("Memory %d [MB]\n", m*2*8);
 	printf("Localsize = %d\n", lsiz);
 
-	benchdaxpy(m, lsiz);
-
+#ifdef ENABLE_DP
+	benchdaxpy <double>(m, lsiz);
+#else
+	benchdaxpy <float>(m, lsiz);
+#endif
 	return 0;
 }

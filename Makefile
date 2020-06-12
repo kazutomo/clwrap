@@ -1,10 +1,10 @@
-#PLATFORM = intelfpga
-PLATFORM = intelgpu
+PLATFORM = intelfpga
+#PLATFORM = intelgpu
 #PLATFORM = nvidia
 
 ifeq ($(PLATFORM),intelfpga)
-CXX=g++
-#CXX=arm-linux-gnueabihf-g++
+#CXX=g++
+CXX=arm-linux-gnueabihf-g++
 CFLAGS = -Wall -O2 -g -Wno-unknown-pragmas -DINTEL
 CFLAGS += $(shell aocl compile-config)
 CXXFLAGS = $(CFLAGS) -std=c++11
@@ -45,7 +45,10 @@ all: demohost daxpyhost slowpihost
 demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
-daxpyhost : daxpyhost.cpp clwrap.hpp
+daxpyhost : axpyhost.cpp clwrap.hpp
+	$(CXX) -o $@ $< -DENABLE_DP $(CXXFLAGS) $(LDFLAGS)
+
+saxpyhost : axpyhost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 slowpihost : slowpihost.cpp clwrap.hpp
@@ -59,7 +62,7 @@ install: clwrap.hpp
 	install -t $(INSTALL_PATH)/include clwrap.hpp
 
 clean:
-	rm -f demohost daxpyhost slowpihost *.o
+	rm -f demohost daxpyhost saxpyhost slowpihost *.o
 
 distclean: clean
 	rm -f *~
