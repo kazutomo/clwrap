@@ -32,8 +32,10 @@ void benchaxpy(int m, int lsiz)
 	cw.listPlatforms();
 	cw.listDevices();
 
-	int n = 1024*1024 * m;
+	int n = (1024 * 1024 * m) / sizeof(FPType);
 	int gsiz = n;
+
+	cout << "n per array : " << n << endl;
 
 	FPType a = 2.0;
 	FPType *x = new FPType[n];
@@ -94,9 +96,9 @@ int main(int argc, char *argv[])
 	if (argc > 2) {
 		lsiz = atoi(argv[2]);
 	}
-	printf("Memory %d [MB]\n", m*2*8);
-	printf("Localsize = %d\n", lsiz);
-
+	cout << "Memory [MB] : " << m   << " (per array)" << endl;
+	cout << "Memory [MB] : " << m*2 << " (total)" << endl;
+	cout << "Localsize   : " << lsiz << endl;
 #ifdef ENABLE_DP
 	benchaxpy<double>(m, lsiz);
 #else
