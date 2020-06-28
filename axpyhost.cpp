@@ -64,7 +64,7 @@ void benchaxpy(int m, int lsiz)
 	cw.runKernel(gsiz, lsiz);
 
 	cout << "elapsed [nsec]: " << cw.getKernelElapsedNanoSec() << endl;
-	cout << "GFlops: " << ((double)n * 2) / cw.getKernelElapsedNanoSec() << endl;
+	cout << "Device GFlops: " << ((double)n * 2) / cw.getKernelElapsedNanoSec() << endl;
 
 	for (int i = 0; i < n; i++) {
 		if (y[i] != x[i] * a) {
@@ -79,7 +79,7 @@ void benchaxpy(int m, int lsiz)
 		s = gettime();
 		host_axpy <FPType> (n, a, x, y);
 		e = gettime() - s;
-		cout << "* host axpi\n";
+		cout << "* Host axpi\n";
 		cout << "elapsed [nsec]: " << e * 1e9 << endl;
 		cout << "GFlops: " << ((double)n * 2) / (e * 1e9) << endl;
 	}
