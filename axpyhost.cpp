@@ -88,7 +88,8 @@ void benchaxpy(int m, int lsiz)
 int main(int argc, char *argv[])
 {
 	int m = 128;
-	int lsiz = 256;
+	//int lsiz = 256;
+	int lsiz = 0; // unset
 
 	if (argc > 1) {
 		m = atoi(argv[1]);
@@ -98,7 +99,11 @@ int main(int argc, char *argv[])
 	}
 	cout << "Memory [MB] : " << m   << " (per array)" << endl;
 	cout << "Memory [MB] : " << m*2 << " (total)" << endl;
-	cout << "Localsize   : " << lsiz << endl;
+	if (lsiz > 0)
+	    cout << "Localsize   : " << lsiz << endl;
+	else
+	    cout << "Localsize   : default" << endl;
+
 #ifdef ENABLE_DP
 	benchaxpy<double>(m, lsiz);
 #else

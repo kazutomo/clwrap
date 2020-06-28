@@ -488,10 +488,13 @@ public:
 		queue.finish(); // needed?
 	}
 
-	void runKernel(int gsz, int lsz = 1) {
-		cl::NDRange ngsz(gsz);
-		cl::NDRange nlsz(lsz);
-		runKernel(ngsz, nlsz);
+	void runKernel(int gsz, int lsz = 0) {
+	    cl::NDRange ngsz(gsz);
+	    cl::NDRange nlsz(lsz);
+
+	    if (lsz == 0) nlsz = cl::NullRange;
+
+	    runKernel(ngsz, nlsz);
 	}
 
 	double getKernelElapsedNanoSec(void) {
