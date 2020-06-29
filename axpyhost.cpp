@@ -35,7 +35,7 @@ void benchaxpy(int m, int lsiz)
 	int n = (1024 * 1024 * m) / sizeof(FPType);
 	int gsiz = n;
 
-	cout << "n per array : " << n << endl;
+	cout << "Number of elems per array : " << n << endl;
 
 	FPType a = 2.0;
 	FPType *x = new FPType[n];
@@ -63,8 +63,10 @@ void benchaxpy(int m, int lsiz)
 
 	cw.runKernel(gsiz, lsiz);
 
-	cout << "elapsed [nsec]: " << cw.getKernelElapsedNanoSec() << endl;
+	cout << "elapsed [sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
 	cout << "Device GFlops: " << ((double)n * 2) / cw.getKernelElapsedNanoSec() << endl;
+
+	cout << "Device BW GB/s: " << (sizeof(FPType)*3*n) / cw.getKernelElapsedNanoSec() << endl;
 
 	for (int i = 0; i < n; i++) {
 		if (y[i] != x[i] * a) {
@@ -80,7 +82,7 @@ void benchaxpy(int m, int lsiz)
 		host_axpy <FPType> (n, a, x, y);
 		e = gettime() - s;
 		cout << "* Host axpi\n";
-		cout << "elapsed [nsec]: " << e * 1e9 << endl;
+		cout << "elapsed [sec]: " << e << endl;
 		cout << "GFlops: " << ((double)n * 2) / (e * 1e9) << endl;
 	}
 };
