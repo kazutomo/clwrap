@@ -273,7 +273,7 @@ public:
 			return;
 		}
 
-		ctx = devs;
+		ctx = devs[0]; // tentative : choose only one device
 		device_id = did;
 
 		dev_selected.push_back(devs[device_id]);
