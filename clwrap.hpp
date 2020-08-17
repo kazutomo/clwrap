@@ -17,7 +17,16 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <CL/cl.hpp>
+#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
+#include <CL/cl2.hpp>
+
+// cl.hpp
+// typedef VECTOR_CLASS<std::pair<const void*, ::size_t> > Binaries;
+// cl2.hpp
+// w/ CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
+// typedef vector<std::pair<const void*, size_type> > Binaries
+// w/o
+// typedef vector<vector<unsigned char>> Binaries
 
 // e.g., local referece
 // /soft/fpga/altera/pro/16.0.2.222/hld/host/include/CL/cl.hpp
