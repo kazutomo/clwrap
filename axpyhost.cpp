@@ -44,7 +44,7 @@ void benchaxpy(int m, int lsiz, int niters)
 
 	/* init data */
 	for (int i = 0; i < n; i++) {
-		x[i] = (FPType)i + 1.0;
+		x[i] = (FPType)(i % 1000) + 1.0;
 		y[i] = 0.0;
 	}
 
@@ -73,7 +73,7 @@ void benchaxpy(int m, int lsiz, int niters)
 
 	cout << "elapsed [sec]: " << elapsed * 1e-9 << endl;
 	cout << "Device GFlops: " << ((double)n * 2 * niters) / elapsed << endl;
-
+	cout << "Device Mem BW GB/s: " << (sizeof(FPType)*3*n*niters) / elapsed << endl;
 
 	for (int i = 0; i < n; i++) {
 		FPType tmp = (x[i] * a) * niters;
@@ -92,7 +92,7 @@ void benchaxpy(int m, int lsiz, int niters)
 		e = gettime() - s;
 		cout << "* Host axpi\n";
 		cout << "elapsed [sec]: " << e << endl;
-		cout << "GFlops: " << ((double)n * 2) / (e * 1e9) << endl;
+		cout << "GFlops: " << ((double)n * 2 *niters) / (e * 1e9) << endl;
 	}
 };
 
