@@ -1,5 +1,6 @@
 #include "clwrap.hpp"
 #include <sys/time.h>
+#include <math.h>
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void host_axpy(int n,
 
 template <class FPType>
 static
-void benchaxpy(int m, int lsiz)
+void benchaxpy(int m, int lsiz, int niters)
 {
 	clwrap  cw;
 
@@ -61,16 +62,23 @@ void benchaxpy(int m, int lsiz)
 	cw.appendArg(sizeof(FPType)*n, x, cw.HOST2DEV);
 	cw.appendArg(sizeof(FPType)*n, y, cw.DUPLEX);
 
-	cw.runKernel(gsiz, lsiz);
+	double elapsed = 0.0;
 
-	cout << "elapsed [sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
-	cout << "Device GFlops: " << ((double)n * 2) / cw.getKernelElapsedNanoSec() << endl;
+	cw.writeToDevice();
+	for (int j = 0; j < niters; ++j) {
+		cw.runKernel(gsiz, lsiz, false);
+		elapsed += cw.getKernelElapsedNanoSec();
+	}
+	cw.readFromDevice();
 
-	cout << "Device BW GB/s: " << (sizeof(FPType)*3*n) / cw.getKernelElapsedNanoSec() << endl;
+	cout << "elapsed [sec]: " << elapsed * 1e-9 << endl;
+	cout << "Device GFlops: " << ((double)n * 2 * niters) / elapsed << endl;
+
 
 	for (int i = 0; i < n; i++) {
-		if (y[i] != x[i] * a) {
-			cout << "Validation failed at " << i << " " << y[i] << " " << x[i] << endl;
+		FPType tmp = (x[i] * a) * niters;
+		if ( fabs(y[i] - tmp) > 0.00001 ) {
+			cout << "Validation failed at " << i << " " << y[i] << " " << tmp <<  " " <<  fabs(y[i] - tmp) << endl;
 			exit(1);
 		}
 	}
@@ -79,7 +87,8 @@ void benchaxpy(int m, int lsiz)
 	if (1) {
 		double s, e;
 		s = gettime();
-		host_axpy <FPType> (n, a, x, y);
+		for (int j = 0; j < niters; ++j)
+			host_axpy <FPType> (n, a, x, y);
 		e = gettime() - s;
 		cout << "* Host axpi\n";
 		cout << "elapsed [sec]: " << e << endl;
@@ -90,8 +99,9 @@ void benchaxpy(int m, int lsiz)
 int main(int argc, char *argv[])
 {
 	int m = 128;
-	//int lsiz = 256;
-	int lsiz = 0; // unset
+	int lsiz = 256;
+	// int lsiz = 0; // unset
+	int n = 2; // # of kernel invocations
 
 	if (argc > 1) {
 		m = atoi(argv[1]);
@@ -99,17 +109,24 @@ int main(int argc, char *argv[])
 	if (argc > 2) {
 		lsiz = atoi(argv[2]);
 	}
-	cout << "Memory [MB] : " << m   << " (per array)" << endl;
-	cout << "Memory [MB] : " << m*2 << " (total)" << endl;
+	if (argc > 3) {
+		n = atoi(argv[3]);
+	}
+	cout << "args: " << m << " " << lsiz << " " << n << endl;
+	cout << endl;
+
+	cout << "# of invocations : " << n << endl;
+	cout << "Memory [MB]      : " << m   << " (per array)" << endl;
+	cout << "Memory [MB]      : " << m*2 << " (total)" << endl;
 	if (lsiz > 0)
-	    cout << "Localsize   : " << lsiz << endl;
+	    cout << "Localsize        : " << lsiz << endl;
 	else
-	    cout << "Localsize   : default" << endl;
+	    cout << "Localsize        : default" << endl;
 
 #ifdef ENABLE_DP
-	benchaxpy<double>(m, lsiz);
+	benchaxpy<double>(m, lsiz, n);
 #else
-	benchaxpy<float>(m, lsiz);
+	benchaxpy<float>(m, lsiz, n);
 #endif
 	return 0;
 }

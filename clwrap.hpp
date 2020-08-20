@@ -9,9 +9,13 @@
 // Tested platforms:
 // Intel OpenCL SDK for Intel embedded GPUs (Gen9)
 // Intel OpenCL SDK for FPGAs (e.g., Nallatech 385A)
+// Intel OpenCL CPUs
 //
 // LICENSE: BSD 3-clause
 //
+// (setq c-basic-offset 8)
+
+
 
 #include <sys/stat.h>
 #include <iostream>
@@ -44,7 +48,7 @@ extern "C" void aocl_mmd_card_info(const char *name , int id,
 class clwrap {
 public:
 	const int version_major = 0;
-	const int version_minor = 6;
+	const int version_minor = 7;
 
 	// VALUE: pass by value, otherwise passed by reference
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
@@ -448,17 +452,19 @@ public:
 		return idx;
 	}
 
-	void write_to_dev(void) {
+	void writeToDevice(void) {
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
 			if (it->dir == HOST2DEV || it->dir == DUPLEX)  {
+				// request a blocking WriteBuffer
 				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data);
 			}
 		}
 	}
 
-	void read_from_dev(void) {
+	void readFromDevice(void) {
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
 			if (it->dir == DEV2HOST || it->dir == DUPLEX)  {
+				// request a blocking ReadBuffer
 				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data);
 			}
 		}
@@ -469,7 +475,7 @@ public:
 		cl::NDRange gsz(1);
 		cl::NDRange lsz(1);
 
-		write_to_dev();
+		writeToDevice();
 
 		queue.enqueueNDRangeKernel(
 				       kernel,
@@ -480,8 +486,9 @@ public:
 				       NULL);
 	}
 
-	void runKernel(cl::NDRange &gsz, cl::NDRange &lsz) {
-		write_to_dev();
+	void runKernel(cl::NDRange &gsz, cl::NDRange &lsz,
+		       bool docopy = true) {
+	        if (docopy) writeToDevice();
 
 		queue.enqueueNDRangeKernel(
 				       kernel,
@@ -492,18 +499,19 @@ public:
 				       &kernel_event);
 		kernel_event.wait();
 
-		read_from_dev();
+		if (docopy) readFromDevice();
 
-		queue.finish(); // needed?
 	}
 
-	void runKernel(int gsz, int lsz = 0) {
+	void finish() { queue.finish(); }
+
+	void runKernel(int gsz, int lsz = 0, bool docopy = true) {
 	    cl::NDRange ngsz(gsz);
 	    cl::NDRange nlsz(lsz);
 
 	    if (lsz == 0) nlsz = cl::NullRange;
 
-	    runKernel(ngsz, nlsz);
+	    runKernel(ngsz, nlsz, docopy);
 	}
 
 	double getKernelElapsedNanoSec(void) {
