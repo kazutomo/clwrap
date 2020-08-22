@@ -58,6 +58,10 @@ public:
 		void *data;
 		bool buffered;
 		cl::Buffer buf;
+		bool ev_rd_added;
+		bool ev_wr_added;
+		cl::Event ev_rd;
+		cl::Event ev_wr;
 	};
 
 	typedef const char* here_t;
@@ -440,6 +444,8 @@ public:
 		kargs[idx].data = data;
 		kargs[idx].dir = dir;
 		kargs[idx].buffered = buffered;
+		kargs[idx].ev_wr_added = false;
+		kargs[idx].ev_rd_added = false;
 
 		if (buffered) {
 			cl::Buffer buf(ctx, get_mem_flag(dir), sz);
@@ -452,11 +458,56 @@ public:
 		return idx;
 	}
 
+	void _printevtiming(cl::Event &ev, double first_start_us) {
+		cl_ulong start, end;
+		double start_us, end_us;
+
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_END, &end);
+
+		start_us = (double)start / 1000.0;
+		end_us = (double)end / 1000.0;
+
+		if(first_start_us<0.0) {
+			first_start_us = start_us;
+			start_us = 0.0;
+			end_us -= first_start_us;
+		} else {
+			start_us  = (double)start / 1000.0;
+			start_us -= first_start_us;
+			end_us   -= first_start_us;
+		}
+		std::cout << "diff_us=" << (end_us-start_us) <<
+			" start_us=" << start_us <<
+			" end_us=" << end_us << std::endl;
+	}
+
+	void printWriteReadTimingTentative() {
+		int idx = 0;
+		double first_start_us = -1.0;
+		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
+			if (it->ev_wr_added) {
+				(it->ev_wr).wait();
+				std::cout << "[" << idx << "] Write : ";
+				_printevtiming(it->ev_wr, first_start_us );
+			}
+			if (it->ev_rd_added) {
+				(it->ev_rd).wait();
+				std::cout << "[" << idx << "] Read  : ";
+				_printevtiming(it->ev_rd, first_start_us);
+			}
+			idx++;
+		}
+	}
+
+
 	void writeToDevice(void) {
+
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
 			if (it->dir == HOST2DEV || it->dir == DUPLEX)  {
 				// request a blocking WriteBuffer
-				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data);
+				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(it->ev_wr));
+				it->ev_wr_added = true;
 			}
 		}
 	}
@@ -465,7 +516,8 @@ public:
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
 			if (it->dir == DEV2HOST || it->dir == DUPLEX)  {
 				// request a blocking ReadBuffer
-				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data);
+				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(it->ev_rd));
+				it->ev_rd_added = true;
 			}
 		}
 	}

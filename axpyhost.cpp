@@ -71,6 +71,8 @@ void benchaxpy(int m, int lsiz, int niters)
 	}
 	cw.readFromDevice();
 
+	// cw.printWriteReadTimingTentative();
+
 	cout << "elapsed [sec]: " << elapsed * 1e-9 << endl;
 	cout << "Device GFlops: " << ((double)n * 2 * niters) / elapsed << endl;
 	cout << "Device Mem BW GB/s: " << (sizeof(FPType)*3*n*niters) / elapsed << endl;
