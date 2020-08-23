@@ -48,24 +48,44 @@ extern "C" void aocl_mmd_card_info(const char *name , int id,
 class clwrap {
 public:
 	const int version_major = 0;
-	const int version_minor = 7;
+	const int version_minor = 8;
 
 	// VALUE: pass by value, otherwise passed by reference
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
+
+	typedef const char* here_t;
+private:
+
+	class profile_event {
+	public:
+		enum evtype {EV_NDRANGE, EV_WRITE, EV_READ};
+		evtype et;
+		int argidx; // for EV_{WRITE|READ}
+		cl::Event ev;
+
+		profile_event(evtype et, int argidx = 0) {
+			this->et = et;
+			this->argidx = argidx;
+		}
+		const char* etstr() {
+			switch(et) {
+			case EV_NDRANGE: return "NDRANGE";
+			case EV_WRITE:   return "WRITE";
+			case EV_READ:    return "READ";
+			default: return "UNKNOWN";
+			}
+		}
+	};
+	std::vector<profile_event> p_evs;
+
 	struct arg_struct {
 		dir_enum dir;
 		size_t sz;
 		void *data;
 		bool buffered;
 		cl::Buffer buf;
-		bool ev_rd_added;
-		bool ev_wr_added;
-		cl::Event ev_rd;
-		cl::Event ev_wr;
 	};
 
-	typedef const char* here_t;
-private:
 	std::vector<cl::Platform> pfs; // initialized only in c'tor
 	std::vector<cl::Device> devs; // initialized only in c'tor
 	std::vector<cl::Device> dev_selected; // initialized only in c'tor
@@ -444,8 +464,6 @@ public:
 		kargs[idx].data = data;
 		kargs[idx].dir = dir;
 		kargs[idx].buffered = buffered;
-		kargs[idx].ev_wr_added = false;
-		kargs[idx].ev_rd_added = false;
 
 		if (buffered) {
 			cl::Buffer buf(ctx, get_mem_flag(dir), sz);
@@ -458,7 +476,7 @@ public:
 		return idx;
 	}
 
-	void _printevtiming(cl::Event &ev, double first_start_us) {
+	void _printevtiming(cl::Event &ev, double &first_start_us) {
 		cl_ulong start, end;
 		double start_us, end_us;
 
@@ -483,41 +501,34 @@ public:
 	}
 
 	void printWriteReadTimingTentative() {
-		int idx = 0;
 		double first_start_us = -1.0;
-		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
-			if (it->ev_wr_added) {
-				(it->ev_wr).wait();
-				std::cout << "[" << idx << "] Write : ";
-				_printevtiming(it->ev_wr, first_start_us );
+		for (std::vector<profile_event>::iterator it = p_evs.begin(); it != p_evs.end(); ++it) {
+			std::cout << it->etstr() << " ";
+			if (it->et == profile_event::EV_WRITE || it->et == profile_event::EV_READ) {
+				std::cout << " argidx=" << it->argidx << " ";
 			}
-			if (it->ev_rd_added) {
-				(it->ev_rd).wait();
-				std::cout << "[" << idx << "] Read  : ";
-				_printevtiming(it->ev_rd, first_start_us);
-			}
-			idx++;
+			_printevtiming(it->ev, first_start_us);
 		}
 	}
 
-
 	void writeToDevice(void) {
-
-		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
+		int argidx = 0;
+		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it, ++argidx) {
 			if (it->dir == HOST2DEV || it->dir == DUPLEX)  {
+				p_evs.push_back(profile_event(profile_event::EV_WRITE, argidx));
 				// request a blocking WriteBuffer
-				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(it->ev_wr));
-				it->ev_wr_added = true;
+				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev) );
 			}
 		}
 	}
 
 	void readFromDevice(void) {
-		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it) {
+		int argidx = 0;
+		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it, ++argidx) {
 			if (it->dir == DEV2HOST || it->dir == DUPLEX)  {
+				p_evs.push_back(profile_event(profile_event::EV_READ, argidx));
 				// request a blocking ReadBuffer
-				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(it->ev_rd));
-				it->ev_rd_added = true;
+				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev));
 			}
 		}
 	}
@@ -542,6 +553,7 @@ public:
 		       bool docopy = true) {
 	        if (docopy) writeToDevice();
 
+		p_evs.push_back(profile_event(profile_event::EV_NDRANGE));
 		queue.enqueueNDRangeKernel(
 				       kernel,
 				       cl::NullRange, // offset
@@ -550,6 +562,8 @@ public:
 				       NULL, // events
 				       &kernel_event);
 		kernel_event.wait();
+
+		p_evs.back().ev = kernel_event;
 
 		if (docopy) readFromDevice();
 
