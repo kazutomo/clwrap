@@ -1,14 +1,14 @@
 // just copy
 
 __kernel void copy(
-	 __global const double *restrict from0,
-	 __global const double *restrict from1,
-	 __global const double *restrict from2,
-	 __global const double *restrict from3,
-	 __global       double *restrict to0,
-	 __global       double *restrict to1,
-	 __global       double *restrict to2,
-	 __global       double *restrict to3
+	 __global const float *restrict from0,
+	 __global const float *restrict from1,
+	 __global const float *restrict from2,
+	 __global const float *restrict from3,
+	 __global       float *restrict to0,
+	 __global       float *restrict to1,
+	 __global       float *restrict to2,
+	 __global       float *restrict to3
 	 )
 {
 	int i = get_global_id(0);

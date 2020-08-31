@@ -38,20 +38,20 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 	cw.listDevices();
 
 	int gsiz = nelems;
-	int allocsize = nelems * sizeof(double);
+	int allocsize = nelems * sizeof(float);
 
-	double *x0 = new double[nelems];
-	double *x1 = new double[nelems];
-	double *x2 = new double[nelems];
-	double *x3 = new double[nelems];
-	double *y0 = new double[nelems];
-	double *y1 = new double[nelems];
-	double *y2 = new double[nelems];
-	double *y3 = new double[nelems];
+	float *x0 = new float[nelems];
+	float *x1 = new float[nelems];
+	float *x2 = new float[nelems];
+	float *x3 = new float[nelems];
+	float *y0 = new float[nelems];
+	float *y1 = new float[nelems];
+	float *y2 = new float[nelems];
+	float *y3 = new float[nelems];
 
 	/* init data */
 	for (int i = 0; i < nelems; i++) {
-		x0[i] = x1[i] = x2[i] = x3[i] = (double)(i % 1000) + 1.0;
+		x0[i] = x1[i] = x2[i] = x3[i] = (float)(i % 1000) + 1.0;
 		y0[i] = y1[i] = y2[i] = y3[i] = 0.0;
 	}
 
@@ -70,7 +70,7 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 	cw.appendArg(allocsize, y2, cw.DEV2HOST);
 	cw.appendArg(allocsize, y3, cw.DEV2HOST);
 
-	double elapsed = 0.0;
+	float elapsed = 0.0;
 
 	cw.writeToDevice();
 	for (int j = 0; j < ninvokes; ++j) {
@@ -82,10 +82,10 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 	cw.print_timing();
 
 	cout << "elapsed [sec]: " << elapsed * 1e-9 << endl;
-	cout << "Device Mem BW GB/s: " << ((double)allocsize * 4.0 * ninvokes) / elapsed << endl;
+	cout << "Device Mem BW GB/s: " << ((float)allocsize * 4.0 * ninvokes) / elapsed << endl;
 
 	for (int i = 0; i < nelems; i++) {
-		double tmp = (double)(i % 1000) + 1.0; 
+		float tmp = (float)(i % 1000) + 1.0; 
 		if ( y0[i] != tmp || y1[i] != tmp || y2[i] != tmp || y3[i] != tmp ) {
 			cout << "Validation failed at " << i << " ref=" << tmp;
 			cout << " y0" << y0[i];
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     
 	cout << "# of elems       : " << nelems << endl;
 	cout << "# of invocations : " << ninvokes << endl;
-	cout << "Memory [Bytes]   : " << nelems*sizeof(double)  << endl;
+	cout << "Memory [Bytes]   : " << nelems*sizeof(float)  << endl;
 	if (lsiz > 0)
 		cout << "Localsize        : " << lsiz << endl;
 	else
