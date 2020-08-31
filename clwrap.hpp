@@ -61,7 +61,7 @@ public:
 
 	class profile_event {
 	public:
-		enum evtype {EV_NDRANGE, EV_WRITE, EV_READ};
+		enum evtype {EV_NDRANGE, EV_WRITE, EV_READ, EV_MARKER};
 		evtype et;
 		int argidx; // for EV_{WRITE|READ}
 		cl::Event ev;
@@ -74,6 +74,7 @@ public:
 		}
 		const char* etstr() {
 			switch(et) {
+			case EV_MARKER:  return "MARKER";
 			case EV_NDRANGE: return "NDRANGE";
 			case EV_WRITE:   return "WRITE";
 			case EV_READ:    return "READ";
@@ -534,6 +535,10 @@ public:
 
 	void writeToDevice(void) {
 		int argidx = 0;
+
+		//p_evs.push_back(profile_event(profile_event::EV_MARKER));
+		//queue.enqueueWaitWithWaitList(0, &(p_evs.back().ev));
+
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it, ++argidx) {
 			if (it->dir == HOST2DEV || it->dir == DUPLEX)  {
 				p_evs.push_back(profile_event(profile_event::EV_WRITE, argidx));
@@ -572,6 +577,8 @@ public:
 
 	void runKernel(cl::NDRange &gsz, cl::NDRange &lsz,
 		       bool docopy = true) {
+
+
 	        if (docopy) writeToDevice();
 
 		p_evs.push_back(profile_event(profile_event::EV_NDRANGE));
