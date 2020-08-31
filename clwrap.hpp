@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <cstdio>
+#include <iomanip>
 #define CL_HPP_TARGET_OPENCL_VERSION 120
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
@@ -56,7 +58,6 @@ public:
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
 
 	typedef const char* here_t;
-private:
 
 	class profile_event {
 	public:
@@ -64,6 +65,8 @@ private:
 		evtype et;
 		int argidx; // for EV_{WRITE|READ}
 		cl::Event ev;
+		double start_sec;
+		double end_sec;
 
 		profile_event(evtype et, int argidx = 0) {
 			this->et = et;
@@ -79,6 +82,7 @@ private:
 		}
 	};
 	std::vector<profile_event> p_evs;
+private:
 
 	struct arg_struct {
 		dir_enum dir;
@@ -478,38 +482,45 @@ public:
 		return idx;
 	}
 
-	void _printevtiming(cl::Event &ev, double &first_start_us) {
-		cl_ulong start, end;
-		double start_us, end_us;
-
-		ev.getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
-		ev.getProfilingInfo(CL_PROFILING_COMMAND_END, &end);
-
-		start_us = (double)start / 1000.0;
-		end_us = (double)end / 1000.0;
-
-		if(first_start_us<0.0) {
-			first_start_us = start_us;
-			start_us = 0.0;
-			end_us -= first_start_us;
-		} else {
-			start_us  = (double)start / 1000.0;
-			start_us -= first_start_us;
-			end_us   -= first_start_us;
-		}
-		std::cout << "diff_us=" << (end_us-start_us) <<
-			" start_us=" << start_us <<
-			" end_us=" << end_us << std::endl;
+	double _ev_start_sec(cl::Event &ev) {
+		cl_ulong tmp;
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_START, &tmp);
+		return (double)tmp * 1e-9;
+	}
+	double _ev_end_sec(cl::Event &ev) {
+		cl_ulong tmp;
+		ev.getProfilingInfo(CL_PROFILING_COMMAND_END, &tmp);
+		return (double)tmp * 1e-9;
 	}
 
-	void printWriteReadTimingTentative() {
-		double first_start_us = -1.0;
+	void _fill_start_end_sec() {
 		for (std::vector<profile_event>::iterator it = p_evs.begin(); it != p_evs.end(); ++it) {
-			std::cout << it->etstr() << " ";
+			it->start_sec = _ev_start_sec(it->ev);
+			it->end_sec   = _ev_end_sec(it->ev);
+		}
+	}
+
+	void print_timing() {
+		double offset_sec = -1.0;
+		double start_relsec;
+		double end_relsec;
+
+		this->finish();
+
+		for (std::vector<profile_event>::iterator it = p_evs.begin(); it != p_evs.end(); ++it) {
+			std::printf("%-8s", it->etstr());
+			if (offset_sec < 0.0) offset_sec = it->start_sec;
+			start_relsec = it->start_sec - offset_sec;
+			end_relsec = it->end_sec - offset_sec;
+
+			std::printf("d=%9.7f s=%9.7f e=%9.7f",
+				    (end_relsec - start_relsec),
+				    start_relsec, end_relsec);
+
 			if (it->et == profile_event::EV_WRITE || it->et == profile_event::EV_READ) {
-				std::cout << " argidx=" << it->argidx << " ";
+				std::cout << " # argno=" << it->argidx;
 			}
-			_printevtiming(it->ev, first_start_us);
+			std::cout << std::endl;
 		}
 	}
 
@@ -571,7 +582,11 @@ public:
 
 	}
 
-	void finish() { queue.finish(); }
+
+	void finish(){
+		queue.finish();
+		_fill_start_end_sec();
+	}
 
 	void runKernel(int gsz, int lsz = 0, bool docopy = true) {
 	    cl::NDRange ngsz(gsz);
