@@ -504,6 +504,8 @@ public:
 		double offset_sec = -1.0;
 		double start_relsec;
 		double end_relsec;
+		double prev_end_relsec = 0.0;
+		double gap_sec;
 
 		this->finish();
 
@@ -512,10 +514,16 @@ public:
 			if (offset_sec < 0.0) offset_sec = it->start_sec;
 			start_relsec = it->start_sec - offset_sec;
 			end_relsec = it->end_sec - offset_sec;
+			if(prev_end_relsec == 0.0) gap_sec = 0.0;
+			else gap_sec = start_relsec - prev_end_relsec;
 
-			std::printf("d=%9.7f s=%9.7f e=%9.7f",
+			std::printf("d=%9.7f s=%9.7f e=%9.7f g=%9.7f [sec]",
 				    (end_relsec - start_relsec),
-				    start_relsec, end_relsec);
+				    start_relsec, end_relsec,
+				    gap_sec
+				    );
+
+			prev_end_relsec = end_relsec;
 
 			if (it->et == profile_event::EV_WRITE || it->et == profile_event::EV_READ) {
 				std::cout << " # argno=" << it->argidx;
