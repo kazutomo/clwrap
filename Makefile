@@ -40,7 +40,7 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: demohost daxpyhost saxpyhost slowpihost
+all: demohost daxpyhost saxpyhost slowpihost copyhost
 
 demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
@@ -53,6 +53,10 @@ saxpyhost : axpyhost.cpp clwrap.hpp
 
 slowpihost : slowpihost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
+
+copyhost : copyhost.cpp clwrap.hpp
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
+
 
 demokernel.aocx : demokernel.cl
 	aoc -march=emulator -DEMULATOR $<
