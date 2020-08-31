@@ -25,7 +25,7 @@ size_t  parse_bufsize_str(const char* str)
 		}
 	}
 
-	if ( m > 1 ) v = std::stoi(a.substr(0,a.length()-1));
+	if ( m > 1 ) v = std::stoi(a.substr(0, a.length()-1)) * m;
 	else         v = std::stoi(a);
 	return v;
 }
