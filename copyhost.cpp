@@ -1,12 +1,19 @@
-#include "clwrap.hpp"
+// (setq c-basic-offset 8)
+
 #include <sys/time.h>
 #include <math.h>
+#include <sys/time.h>
 
-// (setq c-basic-offset 8)
+#include "clwrap.hpp"
 
 using namespace std;
 
-#include <sys/time.h>
+static double gettime(void)
+{
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
+}
 
 size_t  parse_bufsize_str(const char* str)
 {
@@ -72,16 +79,21 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 
 	float elapsed = 0.0;
 
+	double host_st, host_et;
+
+	host_st = gettime();
 	cw.writeToDevice();
 	for (int j = 0; j < ninvokes; ++j) {
 		cw.runKernel(gsiz, lsiz, false);
 		elapsed += cw.getKernelElapsedNanoSec();
 	}
 	cw.readFromDevice();
+	host_et = gettime() - host_st;
 
 	cw.print_timing();
 
-	cout << "elapsed [sec]: " << elapsed * 1e-9 << endl;
+	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
+	std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
 	cout << "Device Mem BW GB/s: " << ((float)allocsize * 4.0 * ninvokes) / elapsed << endl;
 
 	for (int i = 0; i < nelems; i++) {
