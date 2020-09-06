@@ -122,10 +122,11 @@ int main(int argc, char *argv[])
 	if (argc > 2) {
 		ninvokes = atoi(argv[2]);
 	}
-    
-	cout << "# of elems       : " << nelems << endl;
+	cout << argv[0] << " " << nelems << " " << ninvokes << endl;
 	cout << "# of invocations : " << ninvokes << endl;
-	cout << "Memory [Bytes]   : " << nelems*sizeof(float)  << endl;
+	// cout << "# of elems       : " << nelems << endl;
+	// cout << "Memory [Bytes]   : " << nelems*sizeof(float) << " # per array" << endl;
+	cout << "Memory [Bytes]   : " << nelems*sizeof(float)*4 << " # total" << endl;
 	if (lsiz > 0)
 		cout << "Localsize        : " << lsiz << endl;
 	else
