@@ -15,13 +15,13 @@ static double gettime(void)
 	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
 }
 
-size_t  parse_bufsize_str(const char* str)
+static size_t  parse_bufsize_str(const char* str)
 {
 	if (!str) return -1;
 	std::string a(str);
 
 	size_t v = 0;
-	size_t m = 1;    
+	size_t m = 1;
 	if( a.length() > 1 ) {
 
 		int c = toupper(a.back());
@@ -37,9 +37,10 @@ size_t  parse_bufsize_str(const char* str)
 	return v;
 }
 
-void benchcopy(int nelems, int ninvokes, int lsiz)
+static void benchcopy(int nelems, int ninvokes, int lsiz)
 {
 	clwrap  cw;
+	int nbuffers = 4;
 
 	cw.listPlatforms();
 	cw.listDevices();
@@ -47,19 +48,17 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 	int gsiz = nelems;
 	int allocsize = nelems * sizeof(float);
 
-	float *x0 = new float[nelems];
-	float *x1 = new float[nelems];
-	float *x2 = new float[nelems];
-	float *x3 = new float[nelems];
-	float *y0 = new float[nelems];
-	float *y1 = new float[nelems];
-	float *y2 = new float[nelems];
-	float *y3 = new float[nelems];
+	float **x = new float*[nbuffers];
+	float **y = new float*[nbuffers];
 
-	/* init data */
-	for (int i = 0; i < nelems; i++) {
-		x0[i] = x1[i] = x2[i] = x3[i] = (float)(i % 1000) + 1.0;
-		y0[i] = y1[i] = y2[i] = y3[i] = 0.0;
+	for (int i = 0; i < nbuffers ; ++i ) {
+		x[i] = new float[nelems];
+		y[i] = new float[nelems];
+		/* init data */
+		for (int j = 0; j < nelems; j++) {
+			x[i][j] = (float)(j % 1000) + 1.0;
+			y[i][j] = 0.0;
+		}
 	}
 
 	bool ret = cw.prepKernel("copy");
@@ -68,14 +67,12 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 		return;
 	}
 
-	cw.appendArg(allocsize, x0, cw.HOST2DEV);
-	cw.appendArg(allocsize, x1, cw.HOST2DEV);
-	cw.appendArg(allocsize, x2, cw.HOST2DEV);
-	cw.appendArg(allocsize, x3, cw.HOST2DEV);
-	cw.appendArg(allocsize, y0, cw.DEV2HOST);
-	cw.appendArg(allocsize, y1, cw.DEV2HOST);
-	cw.appendArg(allocsize, y2, cw.DEV2HOST);
-	cw.appendArg(allocsize, y3, cw.DEV2HOST);
+	for (int i = 0; i < nbuffers ; ++i ) {
+	    cw.appendArg(allocsize, x[i], cw.HOST2DEV);
+	}
+	for (int i = 0; i < nbuffers ; ++i ) {
+	    cw.appendArg(allocsize, y[i], cw.DEV2HOST);
+	}
 
 	float elapsed = 0.0;
 
@@ -94,20 +91,25 @@ void benchcopy(int nelems, int ninvokes, int lsiz)
 
 	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
 	std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
-	cout << "Device Mem BW GB/s: " << ((float)allocsize * 4.0 * ninvokes) / elapsed << endl;
+	cout << "Device Mem BW GB/s: " << ((float)allocsize * nbuffers * ninvokes) / elapsed << endl;
 
-	for (int i = 0; i < nelems; i++) {
-		float tmp = (float)(i % 1000) + 1.0; 
-		if ( y0[i] != tmp || y1[i] != tmp || y2[i] != tmp || y3[i] != tmp ) {
-			cout << "Validation failed at " << i << " ref=" << tmp;
-			cout << " y0" << y0[i];
-			cout << " y1" << y1[i];
-			cout << " y2" << y2[i];
-			cout << " y3" << y3[i] << std::endl;
-			exit(1);
+	for (int i = 0; i < nbuffers; i++) {
+		for (int j = 0; j < nelems; j++) {
+			float tmp = (float)(j % 1000) + 1.0;
+
+			if (y[i][j] != tmp) {
+				cout << "Validation failed at " << i << " ref=" << tmp;
+				cout << " y" << i << " " << y[i][j] << std::endl;
+				exit(1);
+			}
 		}
 	}
 	cout << "validation passed!" << endl;
+
+	for (int i = 0; i < nbuffers ; ++i ) {
+	    delete x[i];
+	    delete y[i];
+	}
 }
 
 int main(int argc, char *argv[])
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
 	int nelems = 1024*1024;
 	int ninvokes = 8;
 	int lsiz = 0;
-    
+
 	if (argc > 1) {
 		nelems = parse_bufsize_str(argv[1]);
 	}
