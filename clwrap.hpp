@@ -52,7 +52,7 @@ extern "C" void aocl_mmd_card_info(const char *name , int id,
 class clwrap {
 public:
 	const int version_major = 0;
-	const int version_minor = 8;
+	const int version_minor = 9;
 
 	// VALUE: pass by value, otherwise passed by reference
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
@@ -67,6 +67,7 @@ public:
 		cl::Event ev;
 		double start_sec;
 		double end_sec;
+		size_t sz;
 
 		profile_event(evtype et, int argidx = 0) {
 			this->et = et;
@@ -528,6 +529,9 @@ public:
 
 			if (it->et == profile_event::EV_WRITE || it->et == profile_event::EV_READ) {
 				std::cout << " # argno=" << it->argidx;
+
+				std::cout << "  BW=" <<
+					(it->sz / (end_relsec - start_relsec)) * 1e-9 << " GB/s";
 			}
 			std::cout << std::endl;
 		}
@@ -544,6 +548,7 @@ public:
 				p_evs.push_back(profile_event(profile_event::EV_WRITE, argidx));
 				// request a blocking WriteBuffer
 				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev) );
+				p_evs.back().sz = it->sz;
 			}
 		}
 	}
@@ -555,6 +560,7 @@ public:
 				p_evs.push_back(profile_event(profile_event::EV_READ, argidx));
 				// request a blocking ReadBuffer
 				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev));
+				p_evs.back().sz = it->sz;
 			}
 		}
 	}
