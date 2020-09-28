@@ -40,7 +40,7 @@ endif
 
 INSTALL_PATH ?= /usr/local
 
-all: demohost daxpyhost saxpyhost slowpihost copyhost
+all: demohost daxpyhost saxpyhost slowpihost copybenchhost
 
 demohost : demohost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
@@ -54,7 +54,7 @@ saxpyhost : axpyhost.cpp clwrap.hpp
 slowpihost : slowpihost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
-copyhost : copyhost.cpp clwrap.hpp
+copybenchhost : copybenchhost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
 
