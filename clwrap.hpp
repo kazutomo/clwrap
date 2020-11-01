@@ -535,6 +535,8 @@ public:
 			}
 			std::cout << std::endl;
 		}
+		std::cout << "elapsed [sec]: " << end_relsec <<
+		    " # device timer" <<  std::endl;
 	}
 
 	void writeToDevice(void) {

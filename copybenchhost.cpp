@@ -141,7 +141,7 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 	cw.print_timing();
 
 	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
-	std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
+	// std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
 	cout << "Device Mem BW GB/s: " << ((float)allocsize * nbuffers * ninvokes) / elapsed << endl;
 
 	for (int i = 0; i < nbuffers; i++) {
