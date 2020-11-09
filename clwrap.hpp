@@ -73,18 +73,9 @@ public:
 			this->et = et;
 			this->argidx = argidx;
 		}
-		const char* etstr() {
-			switch(et) {
-			case EV_MARKER:  return "MARKER";
-			case EV_NDRANGE: return "NDRANGE";
-			case EV_WRITE:   return "WRITE";
-			case EV_READ:    return "READ";
-			default: return "UNKNOWN";
-			}
-		}
 	};
-	std::vector<profile_event> p_evs;
 private:
+	std::vector<profile_event> p_evs;
 
 	struct arg_struct {
 		dir_enum dir;
@@ -234,6 +225,8 @@ private:
         }
 
 public:
+	const std::vector<profile_event> &get_p_evs() {return p_evs; }
+
 
 #ifdef AOCL_MMD_HACK
 	// technically this function should be called in other thread context
@@ -502,42 +495,6 @@ public:
 		}
 	}
 
-	void print_timing() {
-		double offset_sec = -1.0;
-		double start_relsec;
-		double end_relsec;
-		double prev_end_relsec = 0.0;
-		double gap_sec;
-
-		this->finish();
-
-		for (std::vector<profile_event>::iterator it = p_evs.begin(); it != p_evs.end(); ++it) {
-			std::printf("%-8s", it->etstr());
-			if (offset_sec < 0.0) offset_sec = it->start_sec;
-			start_relsec = it->start_sec - offset_sec;
-			end_relsec = it->end_sec - offset_sec;
-			if(prev_end_relsec == 0.0) gap_sec = 0.0;
-			else gap_sec = start_relsec - prev_end_relsec;
-
-			std::printf("d=%9.7f s=%9.7f e=%9.7f g=%9.7f [sec]",
-				    (end_relsec - start_relsec),
-				    start_relsec, end_relsec,
-				    gap_sec
-				    );
-
-			prev_end_relsec = end_relsec;
-
-			if (it->et == profile_event::EV_WRITE || it->et == profile_event::EV_READ) {
-				std::cout << " # argno=" << it->argidx;
-
-				std::cout << "  BW=" <<
-					(it->sz / (end_relsec - start_relsec)) * 1e-9 << " GB/s";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << "elapsed [sec]: " << end_relsec <<
-		    " # device timer" <<  std::endl;
-	}
 
 	void writeToDevice(void) {
 		int argidx = 0;
@@ -604,7 +561,6 @@ public:
 		if (docopy) readFromDevice();
 
 	}
-
 
 	void finish(){
 		queue.finish();

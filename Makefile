@@ -34,6 +34,8 @@ endif
 
 endif
 
+CXXFLAGS += -I./
+
 #LDFLAGS = $(shell aocl link-config) -lnalla_pcie_mmd
 #LIBC214 = -L/opt/glibc-2.14/lib
 #LDFLAGS = $(shell aocl link-config) $(LIBC214)
@@ -54,8 +56,12 @@ saxpyhost : axpyhost.cpp clwrap.hpp
 slowpihost : slowpihost.cpp clwrap.hpp
 	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
 
-copybenchhost : copybenchhost.cpp clwrap.hpp
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LDFLAGS)
+copybenchhost.o : copybenchhost.cpp clwrap.hpp
+
+print_timing.o : print_timing.cpp  clwrap.hpp
+
+copybenchhost : copybenchhost.o  print_timing.o
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 
 demokernel.aocx : demokernel.cl

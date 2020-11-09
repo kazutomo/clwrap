@@ -4,7 +4,8 @@
 #include <math.h>
 #include <sys/time.h>
 
-#include "clwrap.hpp"
+#include <clwrap.hpp>
+#include <print_timing.hpp>
 
 using namespace std;
 
@@ -138,7 +139,7 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 	cw.readFromDevice();
 	host_et = gettime() - host_st;
 
-	cw.print_timing();
+	print_timing(cw);
 
 	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
 	// std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
