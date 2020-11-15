@@ -146,7 +146,8 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 
 	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
 	// std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);
-	cout << "Device Mem BW GB/s: " << ((float)allocsize * nbuffers * ninvokes) / elapsed << endl;
+	// Note: 2.0 because of memory (read and write)
+	cout << "Device Mem BW GB/s: " << (2.0 * (float)allocsize * nbuffers * ninvokes) / elapsed << endl;
 
 	for (int i = 0; i < nbuffers; i++) {
 		for (int j = 0; j < nelems; j++) {
@@ -172,6 +173,7 @@ int main(int argc, char *argv[])
 	int nelems = 1024*1024;
 	int ninvokes = 8;
 	int lsiz = 0;
+	int nargs = 4;
 
 	if (argc > 1) {
 		nelems = parse_bufsize_str(argv[1]);
@@ -183,13 +185,13 @@ int main(int argc, char *argv[])
 	cout << "# of invocations : " << ninvokes << endl;
 	// cout << "# of elems       : " << nelems << endl;
 	// cout << "Memory [Bytes]   : " << nelems*sizeof(float) << " # per array" << endl;
-	cout << "Memory [Bytes]   : " << nelems*sizeof(float)*4 << " # total" << endl;
+	cout << "Memory [Bytes]   : " << nelems*sizeof(float)*nargs << " # total" << endl;
 	if (lsiz > 0)
 		cout << "Localsize        : " << lsiz << endl;
 	else
 		cout << "Localsize        : default" << endl;
 
-	benchcopy(nelems, ninvokes, lsiz);
+	benchcopy(nelems, ninvokes, lsiz); // add nargs to the args later
 
 	return 0;
 }
