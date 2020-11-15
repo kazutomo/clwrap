@@ -49,7 +49,7 @@ static void benchslowpi(cl_ulong n, int gsiz, int lsiz)
 	cout << "Elapsed [Sec]: " << cw.getKernelElapsedNanoSec() * 1e-9 << endl;
 	cout << "PIs/sec   : " << (double)gsiz / (cw.getKernelElapsedNanoSec() * 1e-9) << endl;
 
-
+	cw.finish();
 
 	for (int i = 0; i < gsiz; i++) {
 		if ( fabs(res[i] - M_PI) > 0.1 ) {

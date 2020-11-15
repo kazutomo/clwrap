@@ -112,8 +112,10 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 			y[i][j] = 0.0;
 		}
 	}
+	bool profiling = true; // true by default in prepKernel()
+	const char *funcname = NULL; // use the same as filename
 
-	bool ret = cw.prepKernel("copy");
+	bool ret = cw.prepKernel("copy", funcname, profiling);
 	if (!ret) {
 		cout << "prepKernel() failed!" << endl;
 		return;
@@ -137,9 +139,10 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 		elapsed += cw.getKernelElapsedNanoSec();
 	}
 	cw.readFromDevice();
+	cw.finish();
 	host_et = gettime() - host_st;
 
-	print_timing(cw);
+	if (profiling) print_timing(cw);
 
 	std::printf("elapsed [sec]: %.7f # host timer\n", host_et);
 	// std::printf("elapsed [sec]: %.7f # device timer\n", elapsed * 1e-9);

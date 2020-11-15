@@ -52,7 +52,7 @@ extern "C" void aocl_mmd_card_info(const char *name , int id,
 class clwrap {
 public:
 	const int version_major = 0;
-	const int version_minor = 9;
+	const int version_minor = 10;
 
 	// VALUE: pass by value, otherwise passed by reference
 	enum dir_enum { VALUE, HOST2DEV, DEV2HOST, DUPLEX };
@@ -76,6 +76,7 @@ public:
 	};
 private:
 	std::vector<profile_event> p_evs;
+	bool profiling_enabled;
 
 	struct arg_struct {
 		dir_enum dir;
@@ -354,11 +355,13 @@ public:
 		listDevices();
 	}
 
-	bool prepKernel(const char *filename, const char *funcname = NULL) {
+	bool prepKernel(const char *filename, const char *funcname = NULL, bool enableProfile = true) {
 		std::string fn = filename;
 		cl_int err = CL_SUCCESS;
 		size_t pos = fn.find_last_of(".");
 		kext_t kext_found = {"", BIN};
+
+		profiling_enabled = enableProfile;
 
 		prgs.clear();
 
@@ -405,7 +408,11 @@ public:
 
 		// create a command queue and kernel
 
-		queue = cl::CommandQueue(ctx, dev_selected[0], CL_QUEUE_PROFILING_ENABLE, &err);
+		cl_command_queue_properties prop = 0;
+		if (profiling_enabled)
+			prop = CL_QUEUE_PROFILING_ENABLE;
+
+		queue = cl::CommandQueue(ctx, dev_selected[0], prop, &err);
 		kernel = cl::Kernel(prgs[program_id], funcname, &err);
 		if (err != CL_SUCCESS) {
 			switch(err) {
@@ -489,6 +496,7 @@ public:
 	}
 
 	void _fill_start_end_sec() {
+		if (! profiling_enabled) return;
 		for (std::vector<profile_event>::iterator it = p_evs.begin(); it != p_evs.end(); ++it) {
 			it->start_sec = _ev_start_sec(it->ev);
 			it->end_sec   = _ev_end_sec(it->ev);
@@ -499,15 +507,17 @@ public:
 	void writeToDevice(void) {
 		int argidx = 0;
 
-		//p_evs.push_back(profile_event(profile_event::EV_MARKER));
-		//queue.enqueueWaitWithWaitList(0, &(p_evs.back().ev));
-
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it, ++argidx) {
-			if (it->dir == HOST2DEV || it->dir == DUPLEX)  {
-				p_evs.push_back(profile_event(profile_event::EV_WRITE, argidx));
+			if (it->dir == HOST2DEV || it->dir == DUPLEX)
+{
+				cl::Event *evsp = NULL;
+				if (profiling_enabled) {
+					p_evs.push_back(profile_event(profile_event::EV_WRITE, argidx));
+					evsp = &(p_evs.back().ev);
+					p_evs.back().sz = it->sz;
+				}
 				// request a blocking WriteBuffer
-				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev) );
-				p_evs.back().sz = it->sz;
+				queue.enqueueWriteBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, evsp);
 			}
 		}
 	}
@@ -516,10 +526,14 @@ public:
 		int argidx = 0;
 		for (std::vector<arg_struct>::iterator it = kargs.begin(); it != kargs.end(); ++it, ++argidx) {
 			if (it->dir == DEV2HOST || it->dir == DUPLEX)  {
-				p_evs.push_back(profile_event(profile_event::EV_READ, argidx));
+				cl::Event *evsp = NULL;
+				if (profiling_enabled) {
+					p_evs.push_back(profile_event(profile_event::EV_READ, argidx));
+					p_evs.back().sz = it->sz;
+					evsp = &(p_evs.back().ev);
+				}
 				// request a blocking ReadBuffer
-				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, &(p_evs.back().ev));
-				p_evs.back().sz = it->sz;
+				queue.enqueueReadBuffer(it->buf, CL_TRUE, 0, it->sz, it->data, NULL, evsp);
 			}
 		}
 	}
@@ -546,7 +560,8 @@ public:
 
 	        if (docopy) writeToDevice();
 
-		p_evs.push_back(profile_event(profile_event::EV_NDRANGE));
+		if (profiling_enabled)
+			p_evs.push_back(profile_event(profile_event::EV_NDRANGE));
 		queue.enqueueNDRangeKernel(
 				       kernel,
 				       cl::NullRange, // offset
@@ -556,7 +571,8 @@ public:
 				       &kernel_event);
 		kernel_event.wait();
 
-		p_evs.back().ev = kernel_event;
+		if (profiling_enabled)
+			p_evs.back().ev = kernel_event;
 
 		if (docopy) readFromDevice();
 

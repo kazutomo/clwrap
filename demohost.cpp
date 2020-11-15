@@ -37,6 +37,8 @@ static void test_clwrap()
 
 	cw.runKernel(gsiz, lsiz);
 
+	cw.finish();
+
 	// validate the results
 	for (int i = 0; i < gsiz; i++) {
 		if (a0[i] != i + 10) {
