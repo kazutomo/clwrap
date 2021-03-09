@@ -16,7 +16,7 @@ static double gettime(void)
 	return (double)tv.tv_sec + (double)tv.tv_usec * 1e-6;
 }
 
-static size_t  parse_bufsize_str(const char* str)
+static size_t parse_bufsize_str(const char* str)
 {
 	if (!str) return -1;
 	std::string a(str);
@@ -81,17 +81,10 @@ static void generatecopycl(const char *fn, int nbuffers)
 }
 
 
-static void benchcopy(int nelems, int ninvokes, int lsiz)
+static void benchcopy(int nelems, int ninvokes, int lsiz, int nbuffers)
 {
 	clwrap  cw;
-	int nbuffers = 4;
 
-	// preparing for a new commandline option that allows users to
-	// specify the number of copy buffers.  quick hack. OpenCL can
-	// build program from a buffer, but writing to a file is
-	// quick. This does not work for FPGA due to very long
-	// compilation. anyway, I'll move this bench to other repo
-	// later
 	generatecopycl("copy.cl", nbuffers);
 
 	cw.listPlatforms();
@@ -170,10 +163,10 @@ static void benchcopy(int nelems, int ninvokes, int lsiz)
 
 int main(int argc, char *argv[])
 {
-	int nelems = 1024*1024;
-	int ninvokes = 8;
-	int lsiz = 0;
+	int nelems = 1024*1024*16;
+	int ninvokes = 20;
 	int nargs = 4;
+	int lsiz = 0;
 
 	if (argc > 1) {
 		nelems = parse_bufsize_str(argv[1]);
@@ -181,17 +174,24 @@ int main(int argc, char *argv[])
 	if (argc > 2) {
 		ninvokes = atoi(argv[2]);
 	}
-	cout << argv[0] << " " << nelems << " " << ninvokes << endl;
+	if (argc > 3) {
+		nargs  =atoi(argv[3]);
+	}
+
+	cout << "[copybenchhost]" << endl;
+	cout << "nelems:   " << nelems << endl;
+	cout << "ninvokes: " << ninvokes << endl;
+	cout << "nargs:    " << nargs << endl;
+	cout << endl;
 	cout << "# of invocations : " << ninvokes << endl;
-	// cout << "# of elems       : " << nelems << endl;
-	// cout << "Memory [Bytes]   : " << nelems*sizeof(float) << " # per array" << endl;
 	cout << "Memory [Bytes]   : " << nelems*sizeof(float)*nargs << " # total" << endl;
 	if (lsiz > 0)
 		cout << "Localsize        : " << lsiz << endl;
 	else
 		cout << "Localsize        : default" << endl;
 
-	benchcopy(nelems, ninvokes, lsiz); // add nargs to the args later
+	benchcopy(nelems, ninvokes, lsiz, nargs);
+
 
 	return 0;
 }

@@ -89,6 +89,8 @@ void print_timing(clwrap  &cw) {
 			l_rd.push_back(gap_sec);
 			b_rd.push_back(bw);
 		} else if (it->et == clwrap::profile_event::EV_NDRANGE) {
+			// total_wr_sz is the total of write to device
+			// '*2' because the kernel copies memory
 			double bw = total_wr_sz*2/drelsec;
 			lprintBW(bw);
 			l_ex.push_back(gap_sec);
