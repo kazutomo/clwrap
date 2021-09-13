@@ -105,10 +105,13 @@ static void benchcopy(int nelems, int ninvokes, int lsiz, int nbuffers)
 			y[i][j] = 0.0;
 		}
 	}
+
+	bool ret = false;
+	// benchmarking loop
 	bool profiling = true; // true by default in prepKernel()
 	const char *funcname = NULL; // use the same as filename
 
-	bool ret = cw.prepKernel("copy", funcname, profiling);
+	ret = cw.prepKernel("copy", funcname, profiling);
 	if (!ret) {
 		cout << "prepKernel() failed!" << endl;
 		return;
@@ -120,6 +123,7 @@ static void benchcopy(int nelems, int ninvokes, int lsiz, int nbuffers)
 	for (int i = 0; i < nbuffers ; ++i ) {
 	    cw.appendArg(allocsize, y[i], cw.DEV2HOST);
 	}
+
 
 	float elapsed = 0.0;
 
@@ -134,6 +138,9 @@ static void benchcopy(int nelems, int ninvokes, int lsiz, int nbuffers)
 	cw.readFromDevice();
 	cw.finish();
 	host_et = gettime() - host_st;
+
+
+	// report
 
 	if (profiling) print_timing(cw);
 
@@ -164,7 +171,7 @@ static void benchcopy(int nelems, int ninvokes, int lsiz, int nbuffers)
 int main(int argc, char *argv[])
 {
 	int nelems = 1024*1024*16;
-	int ninvokes = 20;
+	int ninvokes = 10;
 	int nargs = 4;
 	int lsiz = 0;
 
@@ -191,7 +198,6 @@ int main(int argc, char *argv[])
 		cout << "Localsize        : default" << endl;
 
 	benchcopy(nelems, ninvokes, lsiz, nargs);
-
 
 	return 0;
 }

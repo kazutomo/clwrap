@@ -554,6 +554,7 @@ public:
 				       NULL);
 	}
 
+
 	void runKernel(cl::NDRange &gsz, cl::NDRange &lsz,
 		       bool docopy = true) {
 

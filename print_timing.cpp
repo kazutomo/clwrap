@@ -99,7 +99,7 @@ void print_timing(clwrap  &cw) {
 		cout << endl;
 	}
 
-
+#if 0
 	std::printf("HOST2DEV :  BW %8.3f(%8.3f) GB/s / latency %7.2f(%7.2f) [usec]\n", calc_mean(b_wr)*1e-9, calc_std(b_wr)*1e-9,
 		    calc_mean(l_wr)*1e+6, calc_std(l_wr)*1e+6);
 	std::printf("DEV2HOST :  BW %8.3f(%8.3f) GB/s / latency %7.2f(%7.2f) [usec]\n", calc_mean(b_rd)*1e-9, calc_std(b_rd)*1e-9,
@@ -107,6 +107,15 @@ void print_timing(clwrap  &cw) {
 	std::printf("DEVICEMEM:  BW %8.3f(%8.3f) GB/s / latency %7.2f(%7.2f) [usec]\n", calc_mean(b_ex)*1e-9, calc_std(b_ex)*1e-9,
 		    calc_mean(l_ex)*1e+6, calc_std(l_ex)*1e+6);
 	cout << "NOTE: mean(std). The number in the parenthesis is standard deviation" << endl;
+#endif
+	std::printf("HOST2DEV %8.3f %8.3f  %7.2f %7.2f\n", calc_mean(b_wr)*1e-9, calc_std(b_wr)*1e-9,
+		    calc_mean(l_wr)*1e+6, calc_std(l_wr)*1e+6);
+	std::printf("DEV2HOST %8.3f %8.3f  %7.2f %7.2f\n", calc_mean(b_rd)*1e-9, calc_std(b_rd)*1e-9,
+		    calc_mean(l_rd)*1e+6, calc_std(l_rd)*1e+6);
+	std::printf("DEVICEMEM  %8.3f  %8.3f  %7.2f  %7.2f\n", calc_mean(b_ex)*1e-9, calc_std(b_ex)*1e-9,
+		    calc_mean(l_ex)*1e+6, calc_std(l_ex)*1e+6);
+
+
 
 	cout << "elapsed [sec]: " << end_relsec <<
 		" # device timer" << endl;

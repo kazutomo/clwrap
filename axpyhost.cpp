@@ -100,10 +100,11 @@ void benchaxpy(int m, int lsiz, int niters)
 
 int main(int argc, char *argv[])
 {
-	int m = 128;
+    //int m = 128;
+	int m = 1024;
 	int lsiz = 256;
 	// int lsiz = 0; // unset
-	int n = 2; // # of kernel invocations
+	int n = 1; // # of kernel invocations
 
 	if (argc > 1) {
 		m = atoi(argv[1]);
